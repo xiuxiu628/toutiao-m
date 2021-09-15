@@ -99,10 +99,10 @@ export default {
         message: '登录中...' // 提示消息
       })
       try {
-        const res = await login(this.user)
-        console.log('登录成功', res)
+        const { data } = await login(this.user)
         // 提示 success 或者 fail 的时候，会先把其它的 toast 先清除
         this.$toast.success('登录成功')
+        this.$store.commit('setUser', data.data)
       } catch (err) {
         console.log('登录失败', err)
         this.$toast.fail('登录失败，手机号或验证码错误')
