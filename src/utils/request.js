@@ -8,7 +8,7 @@ import router from '@/router'
 
 // axios.create 方法：复制一个 axios
 const request = axios.create({
-  baseURL: '/api' // 基础路径
+  baseURL: 'http://toutiao-app.itheima.net' // 基础路径
 })
 
 /**

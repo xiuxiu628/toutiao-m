@@ -41,16 +41,7 @@ export default {
   data () {
     return {
       active: 0,
-      channels: [
-        { id: 0, name: '推荐' },
-        { id: 1, name: 'python' },
-        { id: 2, name: '前端' },
-        { id: 4, name: '后端' },
-        { id: 5, name: '框架' },
-        { id: 6, name: 'C++' },
-        { id: 7, name: 'Golang' },
-        { id: 3, name: 'java' }
-      ] // 控制被激活的标签
+      channels: [] // 控制被激活的标签
     }
   },
   computed: {},

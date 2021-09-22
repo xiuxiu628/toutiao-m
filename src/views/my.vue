@@ -46,7 +46,7 @@
       </van-grid>
     </van-cell-group>
 
-    <div class="not-login">
+    <div class="not-login" v-else>
       <div @click="$router.push('/login')">
         <img class="mobile" :src="require('./pic/phone.jpeg')" />
       </div>

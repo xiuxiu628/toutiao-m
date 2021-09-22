@@ -69,8 +69,8 @@ export default {
   data () {
     return {
       user: {
-        mobile: '13911111111', // 手机号
-        code: '246810' // 验证码
+        mobile: '', // 手机号
+        code: '' // 验证码
       },
       isSendSmsLoading: false,
       isCountDownShow: false,
@@ -103,6 +103,7 @@ export default {
         // 提示 success 或者 fail 的时候，会先把其它的 toast 先清除
         this.$toast.success('登录成功')
         this.$store.commit('setUser', data.data)
+        this.$router.back()
       } catch (err) {
         console.log('登录失败', err)
         this.$toast.fail('登录失败，手机号或验证码错误')
