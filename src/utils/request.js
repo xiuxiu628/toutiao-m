@@ -66,7 +66,7 @@ request.interceptors.response.use(
       try {
         const res = await axios({
           method: 'PUT',
-          url: 'http://ttapi.research.itcast.cn/app/v1_0/authorizations',
+          url: 'http://toutiao-app.itheima.net/v1_0/authorizations',
           headers: {
             Authorization: `Bearer ${user.refresh_token}`
           }

@@ -9,6 +9,7 @@
         type="info"
         round
         size="small"
+        to="/search"
         >搜索</van-button
       >
     </van-nav-bar>
@@ -25,22 +26,34 @@
       </van-tab>
     </van-tabs>
     <!-- /文章频道列表 -->
+    <van-popup
+      v-model="isChannelEditShow"
+      position="bottom"
+      closeable
+      close-icon-position="top-left"
+      :style="{ height: '100%' }"
+    >
+      <channel-edit />
+    </van-popup>
   </div>
 </template>
 
 <script>
 import { getUserChannels } from '@/api/user'
 import ArticleList from './components/article-list'
+import ChannelEdit from './components/channel-edit'
 
 export default {
   name: 'HomeIndex',
   components: {
-    ArticleList
+    ArticleList,
+    ChannelEdit
   },
   props: {},
   data () {
     return {
       active: 0,
+      isChannelEditShow: false,
       channels: [] // 控制被激活的标签
     }
   },
