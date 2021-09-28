@@ -39,7 +39,7 @@ export default {
   },
   data () {
     return {
-      articles: [{ title: '1' }], // 数据列表
+      articles: [], // 数据列表
       loading: false, // 控制加载中的 loading 状态
       finished: false, // 控制加载结束的状态，当加载结束，不再触发加载更多
       timestamp: null, // 获取下一页数据的时间戳
@@ -53,7 +53,7 @@ export default {
   mounted () {},
   methods: {
     async onLoad () {
-      console.log('onLoad')
+      // console.log('onLoad')
       // 1. 请求获取数据
       const { data } = await getArticles({
         channel_id: this.channel.id, // 频道 ID

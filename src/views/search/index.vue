@@ -30,7 +30,12 @@
     <!-- /联想建议 -->
 
     <!-- 搜索历史记录 -->
-    <search-history v-else :search-histories="searchHistories" />
+    <search-history
+      v-else
+      :search-histories="searchHistories"
+      @search="onSearch"
+      @updata-histories="searchHistories = $event"
+    />
     <!-- /搜索历史记录 -->
   </div>
 </template>
@@ -39,6 +44,9 @@
 import SearchHistory from './components/search-history'
 import SearchSuggestion from './components/search-suggestion'
 import SearchResult from './components/search-result'
+import { setItem, getItem } from '@/utils/storage'
+// import { getSearchHistories } from '@/api/search'
+import { mapState } from 'vuex'
 
 export default {
   name: 'SearchIndex',
@@ -55,9 +63,18 @@ export default {
       searchHistories: []
     }
   },
-  computed: {},
-  watch: {},
-  created () {},
+  computed: {
+    ...mapState(['user'])
+  },
+  watch: {
+    searchHistories () {
+      // 同步到本地存储
+      setItem('search-histories', this.searchHistories)
+    }
+  },
+  created () {
+    this.loadSearchHistories()
+  },
   mounted () {},
   methods: {
     onSearch (searchText) {
@@ -67,10 +84,21 @@ export default {
         this.searchHistories.splice(index, 1)
       }
       this.searchHistories.unshift(searchText)
+      // setItem('search-histories', this.searchHistories)
       this.isResultShow = true
     },
     onCancel () {
       this.$router.back()
+    },
+    async loadSearchHistories () {
+      const searchHistories = getItem('search-histories') || []
+      // if (this.user) {
+      //   const { data } = await getSearchHistories()
+      //   searchHistories = [
+      //     ...new Set([...searchHistories, ...data.data.keywords])
+      //   ]
+      // }
+      this.searchHistories = searchHistories
     }
   }
 }
