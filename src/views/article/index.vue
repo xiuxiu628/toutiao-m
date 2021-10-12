@@ -2,20 +2,14 @@
   <div class="article-container">
     <!-- 导航栏 -->
     <van-nav-bar
-      class="page-nav-bar"
+      class="app-nav-bar"
       left-arrow
-      title="黑马头条"
+      title="头条文章"
       @click-left="$router.back()"
     ></van-nav-bar>
     <!-- /导航栏 -->
 
     <div class="main-wrap">
-      <!-- 加载中 -->
-      <div class="loading-wrap">
-        <van-loading color="#3296fa" vertical>加载中</van-loading>
-      </div>
-      <!-- /加载中 -->
-
       <!-- 加载完成-文章详情 -->
       <div class="article-detail">
         <!-- 文章标题 -->
@@ -41,6 +35,8 @@
             round
             size="small"
             :icon="article.is_followed ? '' : 'plus'"
+            :loading = "isFollowLoading"
+            @click="onFollow"
             >{{ article.is_followed ? '已关注' : '关注' }}</van-button
           >
           <!-- <van-button
@@ -52,25 +48,14 @@
         <!-- /用户信息 -->
 
         <!-- 文章内容 -->
-        <div class="markdown-body" v-html="article.content">这是文章内容</div>
+        <div
+          class="markdown-body"
+          v-html="article.content"
+          ref="article-content"
+        ></div>
         <van-divider>正文结束</van-divider>
       </div>
       <!-- /加载完成-文章详情 -->
-
-      <!-- 加载失败：404 -->
-      <div class="error-wrap">
-        <van-icon name="failure" />
-        <p class="text">该资源不存在或已删除！</p>
-      </div>
-      <!-- /加载失败：404 -->
-
-      <!-- 加载失败：其它未知错误（例如网络原因或服务端异常） -->
-      <div class="error-wrap">
-        <van-icon name="failure" />
-        <p class="text">内容加载失败！</p>
-        <van-button class="retry-btn">点击重试</van-button>
-      </div>
-      <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
     </div>
 
     <!-- 底部区域 -->
@@ -78,7 +63,7 @@
       <van-button class="comment-btn" type="default" round size="small"
         >写评论</van-button
       >
-      <van-icon name="comment-o"  color="#777" />
+      <van-icon name="comment-o" color="#777" />
       <van-icon color="#777" name="star-o" />
       <van-icon color="#777" name="good-job-o" />
       <van-icon name="share" color="#777777"></van-icon>
@@ -90,6 +75,8 @@
 <script>
 import { getArticleById } from '@/api/article'
 import './github-markdown.css'
+import { ImagePreview } from 'vant'
+import { addFollow, deleteFollow } from '@/api/user'
 
 export default {
   name: 'ArticleIndex',
@@ -102,7 +89,8 @@ export default {
   },
   data () {
     return {
-      article: {} // 文章详情
+      article: {}, // 文章详情
+      isFollowLoading: false
     }
   },
   computed: {},
@@ -116,9 +104,36 @@ export default {
       try {
         const { data } = await getArticleById(this.articleId)
         this.article = data.data
+        this.$nextTick(() => {
+          this.handlePerviewImage()
+        })
       } catch (err) {
         console.log(err)
       }
+    },
+    handlePerviewImage () {
+      const articleContent = this.$refs['article-content']
+      const imgs = articleContent.querySelectorAll('img')
+      const imgPaths = []
+      imgs.forEach((img, index) => {
+        imgPaths.push(img.src)
+        img.onclick = function () {
+          ImagePreview({
+            images: imgPaths,
+            startPosition: index
+          })
+        }
+      })
+    },
+    async onFollow () {
+      this.isFollowLoading = true
+      if (this.article.is_followed) {
+        await deleteFollow(this.article.aut_id)
+      } else {
+        await addFollow(this.article.aut_id)
+      }
+      this.article.is_followed = !this.article.is_followed
+      this.isFollowLoading = false
     }
   }
 }
@@ -130,15 +145,15 @@ export default {
     position: fixed;
     left: 0;
     right: 0;
-    top: 92px;
-    bottom: 88px;
+    top: 44px;
+    bottom: 44px;
     overflow-y: scroll;
     background-color: #fff;
   }
   .article-detail {
     .article-title {
-      font-size: 40px;
-      padding: 50px 32px;
+      font-size: 20px;
+      padding: 25px 16px;
       margin: 0;
       color: #3a3a3a;
     }
@@ -146,66 +161,32 @@ export default {
     .user-info {
       padding: 0 32px;
       .avatar {
-        width: 70px;
-        height: 70px;
-        margin-right: 17px;
+        width: 35px;
+        height: 35px;
+        margin-right: 8.5px;
       }
       .van-cell__label {
         margin-top: 0;
       }
       .user-name {
-        font-size: 24px;
+        font-size: 6px;
         color: #3a3a3a;
       }
       .publish-date {
-        font-size: 23px;
+        font-size: 11.5px;
         color: #b7b7b7;
       }
       .follow-btn {
-        width: 170px;
-        height: 58px;
+        width: 85px;
+        height: 29px;
       }
     }
 
     .markdown-body {
-      padding: 55px 32px;
+      padding: 27.5px 16px;
       /deep/ p {
         text-align: justify;
       }
-    }
-  }
-
-  .loading-wrap {
-    padding: 200px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-  }
-
-  .error-wrap {
-    padding: 200px 32px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    .van-icon {
-      font-size: 122px;
-      color: #b4b4b4;
-    }
-    .text {
-      font-size: 30px;
-      color: #666666;
-      margin: 33px 0 46px;
-    }
-    .retry-btn {
-      width: 280px;
-      height: 70px;
-      line-height: 70px;
-      border: 1px solid #c3c3c3;
-      font-size: 30px;
-      color: #666666;
     }
   }
 
