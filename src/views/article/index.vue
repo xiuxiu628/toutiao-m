@@ -35,7 +35,7 @@
             round
             size="small"
             :icon="article.is_followed ? '' : 'plus'"
-            :loading = "isFollowLoading"
+            :loading="isFollowLoading"
             @click="onFollow"
             >{{ article.is_followed ? '已关注' : '关注' }}</van-button
           >
@@ -56,6 +56,7 @@
         <van-divider>正文结束</van-divider>
       </div>
       <!-- /加载完成-文章详情 -->
+        <article-comment :source="articleId" />
     </div>
 
     <!-- 底部区域 -->
@@ -64,8 +65,8 @@
         >写评论</van-button
       >
       <van-icon name="comment-o" color="#777" />
-      <van-icon color="#777" name="star-o" />
-      <van-icon color="#777" name="good-job-o" />
+      <van-icon :color="article.is_collected? 'orange':'#777'" :name="article.is_collected? 'star': 'star-o'" @click="onCollect" />
+      <van-icon :color="article.attitude === 1? 'red':'#777'" :name="article.attitude === 1? 'good-job': 'good-job-o'" @click="onLike" />
       <van-icon name="share" color="#777777"></van-icon>
     </div>
     <!-- /底部区域 -->
@@ -73,14 +74,17 @@
 </template>
 
 <script>
-import { getArticleById } from '@/api/article'
+import { getArticleById, deleteCollect, addCollect, deleteLike, addLike } from '@/api/article'
 import './github-markdown.css'
 import { ImagePreview } from 'vant'
 import { addFollow, deleteFollow } from '@/api/user'
+import ArticleComment from './components/article-comment'
 
 export default {
   name: 'ArticleIndex',
-  components: {},
+  components: {
+    ArticleComment
+  },
   props: {
     articleId: {
       type: [Number, String, Object],
@@ -134,6 +138,57 @@ export default {
       }
       this.article.is_followed = !this.article.is_followed
       this.isFollowLoading = false
+    },
+    async onCollect () {
+      // 这里 loading 不仅仅是为了交互提示，更重要的是请求期间禁用背景点击功能，防止用户不断的操作界面发出请求
+      this.$toast.loading({
+        duration: 0, // 持续展示 toast
+        message: '操作中...',
+        forbidClick: true // 是否禁止背景点击
+      })
+
+      try {
+        // 如果已收藏，则取消收藏
+        if (this.article.is_collected) {
+          await deleteCollect(this.articleId)
+          // this.article.is_collected = false
+          this.$toast.success('取消收藏')
+        } else {
+          // 添加收藏
+          await addCollect(this.articleId)
+          // this.article.is_collected = true
+          this.$toast.success('收藏成功')
+        }
+        this.article.is_collected = !this.article.is_collected
+      } catch (err) {
+        console.log(err)
+        this.$toast.fail('操作失败')
+      }
+    },
+    async onLike () {
+      // 两个作用：1、交互提示 2、防止网络慢用户连续不断的点击按钮请求
+      this.$toast.loading({
+        duration: 0, // 持续展示 toast
+        message: '操作中...',
+        forbidClick: true // 是否禁止背景点击
+      })
+
+      try {
+        // 如果已经点赞，则取消点赞
+        if (this.article.attitude === 1) {
+          await deleteLike(this.articleId)
+          this.article.attitude = -1
+          this.$toast.success('取消点赞')
+        } else {
+          // 否则添加点赞
+          await addLike(this.articleId)
+          this.article.attitude = 1
+          this.$toast.success('点赞成功')
+        }
+      } catch (err) {
+        console.log(err)
+        this.$toast.fail('操作失败')
+      }
     }
   }
 }
@@ -145,7 +200,7 @@ export default {
     position: fixed;
     left: 0;
     right: 0;
-    top: 44px;
+    top: 46px;
     bottom: 44px;
     overflow-y: scroll;
     background-color: #fff;
